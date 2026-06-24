@@ -44,22 +44,23 @@ async function startBot() {
     // Pairing Code Login
 if (!state.creds.registered) {
     try {
-        console.log("⏳ Waiting 15 seconds before generating pairing code...")
+        const phoneNumber = process.env.PHONE_NUMBER
 
-        await new Promise(resolve => setTimeout(resolve, 15000))
+        console.log("Generating pairing code...")
 
-        const code = await sock.requestPairingCode(
-            process.env.PHONE_NUMBER
-        )
+        setTimeout(async () => {
+            try {
+                const code = await sock.requestPairingCode(phoneNumber)
 
-        console.log("")
-        console.log("🔑 PAIRING CODE:")
-        console.log(code)
-        console.log("")
-
-        console.log("⏳ Waiting 2 minutes for pairing...")
-
-        await new Promise(resolve => setTimeout(resolve, 120000))
+                console.log("")
+                console.log("🔑 PAIRING CODE:")
+                console.log(code)
+                console.log("")
+                console.log("Enter this code in WhatsApp > Linked Devices > Link with phone number")
+            } catch (err) {
+                console.log("Pairing request failed:", err.message)
+            }
+        }, 5000)
 
     } catch (err) {
         console.log("Pairing Error:", err)
@@ -95,5 +96,11 @@ if (!state.creds.registered) {
         }
     })
 }
+const http = require("http")
+
+http.createServer((req, res) => {
+    res.writeHead(200)
+    res.end("Bot Running")
+}).listen(process.env.PORT || 3000)
 
 startBot()
