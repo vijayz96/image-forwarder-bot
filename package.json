@@ -1,13 +1,16 @@
 {
-  "name": "image-forwarder-bot",
+  "name": "whatsapp-catalog-forwarder",
   "version": "1.0.0",
+  "description": "Free cloud automation to forward catalog images for clothing brands",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.7",
-    "pino": "^9.0.0",
+    "@whiskeysockets/baileys": "^6.7.1",
+    "express": "^4.21.0",
+    "pino": "^9.5.0",
     "qrcode-terminal": "^0.12.0"
   }
 }
+
