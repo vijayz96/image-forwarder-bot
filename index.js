@@ -11,10 +11,10 @@ app.listen(PORT, () => console.log(`[Cloud Engine] Monitoring port ${PORT}`));
 // 2. CONFIGURATION VARIABLES
 // IMPORTANT: Put your phone number here starting with country code, NO plus sign (+) or spaces.
 // Example: If your number is +91 98765 43210, write: '919876543210'
-const MY_PHONE_NUMBER = '91 8589822129'; 
+const MY_PHONE_NUMBER = '918589822129'; 
 
 const SOURCE_GROUP = '120363428389082831@g.us'; 
-const TARGET_GROUP = '120363424960811886@g.us@g.us'; 
+const TARGET_GROUP = '120363424960811886@g.us'; 
 
 async function startForwarder() {
     const { state, saveCreds } = await useMultiFileAuthState('render_auth_session');
