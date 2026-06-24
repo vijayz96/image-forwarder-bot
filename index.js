@@ -34,7 +34,7 @@ async function startBot() {
             if (shouldReconnect) {
     console.log("🔄 Reconnecting in 5 seconds...")
     setTimeout(() => startBot(), 5000)
-}
+
             }
         }
 
