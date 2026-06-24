@@ -42,17 +42,29 @@ async function startBot() {
     })
 
     // Pairing Code Login
-    if (!sock.authState?.creds?.registered) {
-        const phoneNumber = process.env.PHONE_NUMBER
+if (!state.creds.registered) {
+    try {
+        console.log("⏳ Waiting 15 seconds before generating pairing code...")
 
-        const code = await sock.requestPairingCode(phoneNumber)
+        await new Promise(resolve => setTimeout(resolve, 15000))
+
+        const code = await sock.requestPairingCode(
+            process.env.PHONE_NUMBER
+        )
 
         console.log("")
-        console.log("PAIRING CODE:")
+        console.log("🔑 PAIRING CODE:")
         console.log(code)
         console.log("")
-    }
 
+        console.log("⏳ Waiting 2 minutes for pairing...")
+
+        await new Promise(resolve => setTimeout(resolve, 120000))
+
+    } catch (err) {
+        console.log("Pairing Error:", err)
+    }
+}
     // Listen for messages
     sock.ev.on("messages.upsert", async ({ messages }) => {
         try {
