@@ -1,118 +1,104 @@
 const {
-    default: makeWASocket,
-    useMultiFileAuthState,
-    DisconnectReason,
-    Browsers
-} = require('@whiskeysockets/baileys');
+  default: makeWASocket,
+  useMultiFileAuthState,
+  DisconnectReason,
+  Browsers
+} = require("@whiskeysockets/baileys");
 
-const pino = require('pino');
-const express = require('express');
+const pino = require("pino");
+const express = require("express");
 
-// EXPRESS SERVER
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-    res.send('WhatsApp Forwarder Running');
+app.get("/", (req, res) => {
+  res.send("WhatsApp Bot Running");
 });
 
 app.listen(PORT, () => {
-    console.log(`[Cloud Engine] Running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
 
-// CONFIGURATION
-const MY_PHONE_NUMBER = '918589822129'; // Your number without + or spaces
+const MY_PHONE_NUMBER = "918589822129";
+const SOURCE_GROUP = "120363428389082831@g.us";
+const TARGET_GROUP = "120363424960811886@g.us";
 
-const SOURCE_GROUP = '120363428389082831@g.us';
-const TARGET_GROUP = '120363424960811886@g.us';
+async function startBot() {
+  const { state, saveCreds } = await useMultiFileAuthState("render_auth_session");
 
-async function startForwarder() {
+  const sock = makeWASocket({
+    auth: state,
+    logger: pino({ level: "silent" }),
+    browser: Browsers.ubuntu("Chrome")
+  });
 
-    const { state, saveCreds } = await useMultiFileAuthState('render_auth_session');
+  sock.ev.on("creds.update", saveCreds);
 
-    const sock = makeWASocket({
-        auth: state,
-        logger: pino({ level: 'silent' }),
-        printQRInTerminal: false,
-        browser: Browsers.macOS('Chrome')
-    });
+  sock.ev.on("connection.update", async ({ connection, lastDisconnect }) => {
 
-    sock.ev.on('creds.update', saveCreds);
-
-    // Pairing code
-    if (!sock.authState.creds.registered) {
-        setTimeout(async () => {
-            try {
-                const code = await sock.requestPairingCode(MY_PHONE_NUMBER);
-
-                console.log('\n============================');
-                console.log('PAIRING CODE:', code);
-                console.log('============================\n');
-
-            } catch (err) {
-                console.error(err);
-            }
-        }, 5000);
+    if (connection === "open") {
+      console.log("✅ WhatsApp Connected");
     }
 
-    sock.ev.on('connection.update', ({ connection, lastDisconnect }) => {
+    if (connection === "close") {
+      const shouldReconnect =
+        lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
 
-        if (connection === 'open') {
-            console.log('✅ WhatsApp Connected');
-        }
+      console.log("Connection closed");
 
-        if (connection === 'close') {
+      if (shouldReconnect) {
+        console.log("Reconnecting...");
+        startBot();
+      }
+    }
+  });
 
-            const shouldReconnect =
-                lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+  // Wait before requesting pairing code
+  if (!sock.authState.creds.registered) {
+    setTimeout(async () => {
+      try {
+        const code = await sock.requestPairingCode(MY_PHONE_NUMBER);
 
-            if (shouldReconnect) {
-                console.log('Reconnecting...');
-                startForwarder();
-            }
-        }
-    });
+        console.log("\n=========================");
+        console.log("PAIRING CODE:", code);
+        console.log("=========================\n");
 
-    sock.ev.on('messages.upsert', async ({ messages }) => {
+      } catch (err) {
+        console.log("Pairing error:", err);
+      }
+    }, 20000);
+  }
 
-        const msg = messages[0];
+  sock.ev.on("messages.upsert", async ({ messages }) => {
+    const msg = messages[0];
 
-        if (!msg.message || msg.key.fromMe) return;
+    if (!msg.message || msg.key.fromMe) return;
 
-        const chatId = msg.key.remoteJid;
+    const chatId = msg.key.remoteJid;
 
-        // Detect image in source group
-        if (
-            chatId === SOURCE_GROUP &&
-            msg.message.imageMessage
-        ) {
+    if (
+      chatId === SOURCE_GROUP &&
+      msg.message.imageMessage
+    ) {
+      try {
 
-            try {
+        await sock.sendMessage(
+          TARGET_GROUP,
+          {
+            image: {
+              url: "./coustum.jpg"
+            },
+            caption: "🔥 Image received successfully"
+          }
+        );
 
-                console.log('Image detected');
+        console.log("Custom image sent");
 
-                await sock.sendMessage(
-                    TARGET_GROUP,
-                    {
-                        image: {
-                            url: './media/custom.jpg'
-                        },
-                        caption: '🔥 Image received successfully'
-                    }
-                );
-
-                console.log('Custom image sent');
-
-            } catch (err) {
-
-                console.error('Error:', err);
-
-            }
-
-        }
-
-    });
-
+      } catch (err) {
+        console.log("Send Error:", err);
+      }
+    }
+  });
 }
 
-startForwarder();
+startBot();
