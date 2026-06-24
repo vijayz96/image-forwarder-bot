@@ -13,8 +13,8 @@ app.listen(PORT, () => console.log(`[Cloud Engine] Monitoring port ${PORT}`));
 // Example: If your number is +91 98765 43210, write: '919876543210'
 const MY_PHONE_NUMBER = '91 8589822129'; 
 
-const SOURCE_GROUP = 'PASTE_YOUR_SUPPLIER_GROUP_ID_HERE@g.us'; 
-const TARGET_GROUP = 'PASTE_YOUR_CUSTOMER_GROUP_ID_HERE@g.us'; 
+const SOURCE_GROUP = '120363428389082831@g.us'; 
+const TARGET_GROUP = '120363424960811886@g.us@g.us'; 
 
 async function startForwarder() {
     const { state, saveCreds } = await useMultiFileAuthState('render_auth_session');
