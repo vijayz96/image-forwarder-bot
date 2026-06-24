@@ -7,8 +7,8 @@ const {
 const P = require("pino")
 
 // CHANGE THESE
-const SOURCE_GROUP = "SOURCE_GROUP_ID@g.us"
-const TARGET_GROUP = "TARGET_GROUP_ID@g.us"
+const SOURCE_GROUP = "120363428389082831@g.us"
+const TARGET_GROUP = "120363424960811886@g.us"
 
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState("./auth_info")
